@@ -228,6 +228,16 @@
         </configuration>
       </plugin>
     </plugins>
+
+    <!-- This should go in the swoop profile below, but maven doesn't allow it. -->
+    <extensions>
+      <!-- Allows access to Maven repositories backed by S3 -->
+      <extension>
+        <groupId>org.kuali.maven.wagons</groupId>
+        <artifactId>maven-s3-wagon</artifactId>
+        <version>1.2.1</version>
+      </extension>
+    </extensions>
   </build>
 
   <profiles>
@@ -289,6 +299,49 @@
         </pluginManagement>
       </build>
     </profile>
+
+    <profile>
+      <id>swoop</id>
+      <activation>
+        <property>
+          <name>!skipSwoop</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <!-- Building a source jar -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>2.4</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+      <!-- Swoop's private Maven repositories for distribution -->
+      <distributionManagement>
+        <site>
+          <id>swoop.site</id>
+          <url>s3://swoop-maven/site</url>
+        </site>
+        <repository>
+          <id>swoop.release</id>
+          <url>s3://swoop-maven/release</url>
+        </repository>
+        <snapshotRepository>
+          <id>swoop.snapshot</id>
+          <url>s3://swoop-maven/snapshot</url>
+        </snapshotRepository>
+      </distributionManagement>
+    </profile>
+
   </profiles>
 </project>
 
