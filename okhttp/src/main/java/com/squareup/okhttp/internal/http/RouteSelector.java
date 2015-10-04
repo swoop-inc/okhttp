@@ -188,6 +188,10 @@ public final class RouteSelector {
       inetSocketAddresses.add(new InetSocketAddress(inetAddress, socketPort));
     }
 
+    if (client.isDnsLoadbalancing()) {
+      Collections.shuffle(inetSocketAddresses);
+    }
+
     nextInetSocketAddressIndex = 0;
   }
 

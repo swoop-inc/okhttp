@@ -20,6 +20,7 @@ import com.squareup.okhttp.internal.InternalCache;
 import com.squareup.okhttp.internal.Network;
 import com.squareup.okhttp.internal.RouteDatabase;
 import com.squareup.okhttp.internal.Util;
+import com.squareup.okhttp.internal.Version;
 import com.squareup.okhttp.internal.http.AuthenticatorAdapter;
 import com.squareup.okhttp.internal.http.HttpEngine;
 import com.squareup.okhttp.internal.http.RouteException;
@@ -198,6 +199,11 @@ public class OkHttpClient implements Cloneable {
   private int readTimeout = 10_000;
   private int writeTimeout = 10_000;
 
+  /** Swoop specific properties. */
+  private String userAgent = Version.userAgent();
+  private boolean dnsLoadbalancing = false;
+  /** End of Swoop specific properties. */
+
   public OkHttpClient() {
     routeDatabase = new RouteDatabase();
     dispatcher = new Dispatcher();
@@ -228,6 +234,9 @@ public class OkHttpClient implements Cloneable {
     this.connectTimeout = okHttpClient.connectTimeout;
     this.readTimeout = okHttpClient.readTimeout;
     this.writeTimeout = okHttpClient.writeTimeout;
+
+    this.userAgent = okHttpClient.userAgent;
+    this.dnsLoadbalancing = okHttpClient.dnsLoadbalancing;
   }
 
   /**
@@ -594,6 +603,41 @@ public class OkHttpClient implements Cloneable {
   public List<Interceptor> networkInterceptors() {
     return networkInterceptors;
   }
+
+  // Swoop specific settings
+
+  public boolean isDnsLoadbalancing() {
+    return dnsLoadbalancing;
+  }
+
+  /**
+   * For connections to origin servers that resolve to multiple IP addresses (sometimes known
+   * as DNS round robin load balancing), set this property to true in order to have a route
+   * randomly selected (as opposed to the order in which the DNS was resolved). This does not
+   * affect the way different routes are retried upon connection failures, only the order in
+   * which they're selected.
+   * <p/>
+   * This is especially useful given the way JVMs cache DNS resolutions (sometimes for the
+   * lifetime of the JVM session).
+   * <p/>
+   * This setting is defaulted to false.
+   */
+  public OkHttpClient setDnsLoadbalancing(boolean dnsLoadbalancing) {
+    this.dnsLoadbalancing = dnsLoadbalancing;
+    return this;
+  }
+
+  public String getUserAgent() {
+    return userAgent;
+  }
+
+  public OkHttpClient setUserAgent(String userAgent) {
+    if (userAgent == null) throw new IllegalArgumentException("userAgent == null");
+    this.userAgent = userAgent;
+    return this;
+  }
+
+  //  End of Swoop specific settings
 
   /**
    * Prepares the {@code request} to be executed at some point in the future.
