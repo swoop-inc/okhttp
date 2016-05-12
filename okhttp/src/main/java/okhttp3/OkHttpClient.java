@@ -15,6 +15,25 @@
  */
 package okhttp3;
 
+import okhttp3.internal.Internal;
+import okhttp3.internal.Util;
+import okhttp3.internal.Version;
+import okhttp3.internal.cache.InternalCache;
+import okhttp3.internal.connection.RealConnection;
+import okhttp3.internal.connection.RouteDatabase;
+import okhttp3.internal.connection.StreamAllocation;
+import okhttp3.internal.platform.Platform;
+import okhttp3.internal.tls.CertificateChainCleaner;
+import okhttp3.internal.tls.OkHostnameVerifier;
+
+import javax.net.SocketFactory;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.ProxySelector;
@@ -28,23 +47,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-import javax.net.SocketFactory;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
-import okhttp3.internal.Internal;
-import okhttp3.internal.Util;
-import okhttp3.internal.cache.InternalCache;
-import okhttp3.internal.connection.RealConnection;
-import okhttp3.internal.connection.RouteDatabase;
-import okhttp3.internal.connection.StreamAllocation;
-import okhttp3.internal.platform.Platform;
-import okhttp3.internal.tls.CertificateChainCleaner;
-import okhttp3.internal.tls.OkHostnameVerifier;
 import okhttp3.internal.ws.RealWebSocket;
 
 /**
@@ -203,6 +205,9 @@ public class OkHttpClient implements Cloneable, Call.Factory, WebSocket.Factory 
   final int writeTimeout;
   final int pingInterval;
 
+  // @swoop
+  final String userAgent;
+
   public OkHttpClient() {
     this(new Builder());
   }
@@ -248,6 +253,9 @@ public class OkHttpClient implements Cloneable, Call.Factory, WebSocket.Factory 
     this.readTimeout = builder.readTimeout;
     this.writeTimeout = builder.writeTimeout;
     this.pingInterval = builder.pingInterval;
+
+    // @swoop
+    this.userAgent = builder.userAgent;
   }
 
   private X509TrustManager systemDefaultTrustManager() {
@@ -391,6 +399,13 @@ public class OkHttpClient implements Cloneable, Call.Factory, WebSocket.Factory 
   }
 
   /**
+   * swoop
+   */
+  public String getUserAgent() {
+    return userAgent;
+  }
+
+  /**
    * Prepares the {@code request} to be executed at some point in the future.
    */
   @Override public Call newCall(Request request) {
@@ -438,6 +453,9 @@ public class OkHttpClient implements Cloneable, Call.Factory, WebSocket.Factory 
     int writeTimeout;
     int pingInterval;
 
+    // @swoop
+    String userAgent;
+
     public Builder() {
       dispatcher = new Dispatcher();
       protocols = DEFAULT_PROTOCOLS;
@@ -458,6 +476,9 @@ public class OkHttpClient implements Cloneable, Call.Factory, WebSocket.Factory 
       readTimeout = 10_000;
       writeTimeout = 10_000;
       pingInterval = 0;
+
+      // @swoop
+      userAgent = Version.userAgent();
     }
 
     Builder(OkHttpClient okHttpClient) {
@@ -487,6 +508,9 @@ public class OkHttpClient implements Cloneable, Call.Factory, WebSocket.Factory 
       this.readTimeout = okHttpClient.readTimeout;
       this.writeTimeout = okHttpClient.writeTimeout;
       this.pingInterval = okHttpClient.pingInterval;
+
+      // @swoop
+      this.userAgent = okHttpClient.userAgent;
     }
 
     /**
@@ -861,6 +885,14 @@ public class OkHttpClient implements Cloneable, Call.Factory, WebSocket.Factory 
 
     public Builder addNetworkInterceptor(Interceptor interceptor) {
       networkInterceptors.add(interceptor);
+      return this;
+    }
+
+    /**
+     * swoop
+     */
+    public Builder userAgent(String userAgent) {
+      this.userAgent = userAgent;
       return this;
     }
 
