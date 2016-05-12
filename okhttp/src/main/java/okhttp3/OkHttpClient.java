@@ -15,6 +15,23 @@
  */
 package okhttp3;
 
+import okhttp3.internal.Internal;
+import okhttp3.internal.InternalCache;
+import okhttp3.internal.Platform;
+import okhttp3.internal.RouteDatabase;
+import okhttp3.internal.Util;
+import okhttp3.internal.Version;
+import okhttp3.internal.http.StreamAllocation;
+import okhttp3.internal.io.RealConnection;
+import okhttp3.internal.tls.OkHostnameVerifier;
+import okhttp3.internal.tls.TrustRootIndex;
+
+import javax.net.SocketFactory;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.X509TrustManager;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.ProxySelector;
@@ -23,21 +40,6 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import javax.net.SocketFactory;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.X509TrustManager;
-import okhttp3.internal.Internal;
-import okhttp3.internal.InternalCache;
-import okhttp3.internal.Platform;
-import okhttp3.internal.RouteDatabase;
-import okhttp3.internal.Util;
-import okhttp3.internal.http.StreamAllocation;
-import okhttp3.internal.io.RealConnection;
-import okhttp3.internal.tls.OkHostnameVerifier;
-import okhttp3.internal.tls.TrustRootIndex;
 
 /**
  * Factory for {@linkplain Call calls}, which can be used to send HTTP requests and read their
@@ -147,6 +149,9 @@ public class OkHttpClient implements Cloneable, Call.Factory {
   final int readTimeout;
   final int writeTimeout;
 
+  // @swoop
+  final String userAgent;
+
   public OkHttpClient() {
     this(new Builder());
   }
@@ -205,6 +210,9 @@ public class OkHttpClient implements Cloneable, Call.Factory {
     this.connectTimeout = builder.connectTimeout;
     this.readTimeout = builder.readTimeout;
     this.writeTimeout = builder.writeTimeout;
+
+    // @swoop
+    this.userAgent = builder.userAgent;
   }
 
   /** Default connect timeout (in milliseconds). */
@@ -317,6 +325,13 @@ public class OkHttpClient implements Cloneable, Call.Factory {
   }
 
   /**
+   * @swoop
+   */
+  public String getUserAgent() {
+    return userAgent;
+  }
+
+  /**
    * Prepares the {@code request} to be executed at some point in the future.
    */
   @Override public Call newCall(Request request) {
@@ -354,6 +369,9 @@ public class OkHttpClient implements Cloneable, Call.Factory {
     int readTimeout;
     int writeTimeout;
 
+    // @swoop
+    String userAgent;
+
     public Builder() {
       dispatcher = new Dispatcher();
       protocols = DEFAULT_PROTOCOLS;
@@ -373,6 +391,9 @@ public class OkHttpClient implements Cloneable, Call.Factory {
       connectTimeout = 10_000;
       readTimeout = 10_000;
       writeTimeout = 10_000;
+
+      // @swoop
+      userAgent = Version.userAgent();
     }
 
     Builder(OkHttpClient okHttpClient) {
@@ -401,6 +422,9 @@ public class OkHttpClient implements Cloneable, Call.Factory {
       this.connectTimeout = okHttpClient.connectTimeout;
       this.readTimeout = okHttpClient.readTimeout;
       this.writeTimeout = okHttpClient.writeTimeout;
+
+      // @swoop
+      this.userAgent = okHttpClient.userAgent;
     }
 
     /**
@@ -711,6 +735,14 @@ public class OkHttpClient implements Cloneable, Call.Factory {
 
     public Builder addNetworkInterceptor(Interceptor interceptor) {
       networkInterceptors.add(interceptor);
+      return this;
+    }
+
+    /**
+     * @swoop
+     */
+    public Builder userAgent(String userAgent) {
+      this.userAgent = userAgent;
       return this;
     }
 

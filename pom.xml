@@ -48,7 +48,9 @@
     <!-- ALPN library targeted to Java 7 -->
     <alpn.jdk7.version>7.1.2.v20141202</alpn.jdk7.version>
     <!-- ALPN library targeted to Java 8 update 25. -->
-    <alpn.jdk8.version>8.1.2.v20141202</alpn.jdk8.version>
+    <!-- Check versions with this page: -->
+    <!-- http://www.eclipse.org/jetty/documentation/current/alpn-chapter.html#alpn-versions -->
+    <alpn.jdk8.version>8.1.7.v20160121</alpn.jdk8.version>
     <bouncycastle.version>1.50</bouncycastle.version>
     <gson.version>2.2.3</gson.version>
     <apache.http.version>4.2.2</apache.http.version>
