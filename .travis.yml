@@ -1,21 +1,5 @@
 language: java
 
-jdk:
-  - oraclejdk7
-  - oraclejdk8
-
-after_success:
-  - .buildscript/deploy_snapshot.sh
-
-env:
-  global:
-    - secure: "S0BTJVrF4fUCwhTdmoQY6LYr5r1wgXZ/p8lc5bIgUUsc1Ckalwt7s/GDwPuLJ4702sI5t56Eye2iEIMUjeFJKqebZRsX1C5oYsYFxGi3BGlepstYpmj0gLXuSWqCLniS9zmHXCxLhLkC6KxPVjhDlbq76XQx0o3K1J8oEIj/PCE="
-    - secure: "awV7yLXURjlPbTOladsNDZk74KYCNXoiZpAP0gQFfK4Sc0fc7+kg8z/yhdWXeTxjsIZ6m0dVDHTqnH8ytnydwXpBam8JdQJ+EAWA6R3Svq1BR1bzl/PcZUoz+Xn8lMXdU3yA1p4qtQlUhMxwsE3MOVe24HSDJPAu4XeWFj1j3qo="
-
-branches:
-  except:
-    - gh-pages
-
 notifications:
   email: false
 
@@ -25,7 +9,47 @@ cache:
   directories:
     - $HOME/.m2
 
-addons:
-  apt:
-    packages:
-      - oracle-java8-installer
+branches:
+  except:
+    - gh-pages
+    - /^v[0-9]/
+
+jdk:
+  - oraclejdk8
+
+env:
+  global:
+    # These should track with okhttp upstream
+    - MAJOR_VERSION=2
+    - MINOR_VERSION=6
+    - PATCH_VERSION=0
+    - SWOOP_RELEASE_BRANCH=swoop
+    - PADDED_TRAVIS_BUILD_NUMBER=$(printf "%03d" $TRAVIS_BUILD_NUMBER)
+    - SWOOP_PROJECT_VERSION="$MAJOR_VERSION.$MINOR_VERSION.$PATCH_VERSION-swoop$PADDED_TRAVIS_BUILD_NUMBER"
+
+    - secure: "ibYkr6rEAH560a9tQnhWvRljh8jDXmxQTQ6SAdhQAvW9cZUQ2EiMjLQY8FpvafcOmqGlz+3XJTmBosZ6/oi3uODrFLyrrKJk6W8PBxabnMQcu+Ltr5XxCw39SsDuCzPwlnr1IBQa0xQqPhtD1z1TGyJALlel+8itJiQWhtknberWICobMUg09vOBytAAZP137zhUX2vwCEo+q9jTGEwJ9g6aBtZ2S1JzJtlaGge+QQ1s09Sv9DGt9anRtz+jNM5Q+Gz8HfOVG8DPtRAfA/UGDHG5gl03aYfZDC3eVUhmEpWuT2gwPEEKz9pmenT/fWjdrGIJRWqzpbiuQ09/N58sX9MUq6wGD3Lpkzx/nqDH9I7+dDQ4ug2+6w0x8VDX7wgsKt69SMZutHm0n2CK1xxElOzZl3XIbfOphjI24Kv5fGa+LdjeVu8TbDjPVnTg/mMlI+pN5uylamACOaP2Hu8iJ49jMbA3HJjQ6F4QUgN//c/zfwAp4rLa+hb2Upsxa1s0R2X74lFP6tVu3azr+GerijK1gE1IqjSMVMLwRWWbQ6I68FEyTaQJWbunRWzdkVZK4nbK9H5F8/WL8QjQ7L02VIFUqmJB1oBXkU2UblwgS+PfaOnTbNI2G48Ou2zOP4S4WkcpXycwHzL9dqTkwOlHx+3M/JdVTpPpCSh4umsBdBY="
+    - secure: "j5ijKAr0Sg3VvDkkbm5iOoKy7QaP5wkZiQsus1ACNzRgsshevwbnc3r8tTTxo9ynPtK4VZyhEwXkmx/ePmH/DBmEpw0QDobcREql/L52rvBzkVoQxF0cjwX8GaAd9k2I6EUlqB5eJzV0//RO/ZeG4qISDVRt4GOAKw1NHsxS2SiaQVVENWNHbEFOmXDpWJm+8d13ISXn3SByN7xDlLdhu5ZsOWpKu6qR0zEUt/ehiFlKxjCiH0iNiPUTtb2tDtLlc8Z7+AYuiOQt+wjfCY9TtPs4BsV/DXLYGBrxMo5tlzSMpVLGU6Zro98pxLAnVRaAcSKIxQRXSouEUk4rGwYx1Z+XOByeQSBp47pyDpcrrsrr/3LgW6//kcWQYh0gSafg+v9J24MAobIy2gg9IeMcGgbqGIAKfi68jEuOWEYKUv3KAWghUVDvkioWyMIe+uz+rHpSrlokvLktHMBjux39ZOGL1ThUMLH0ciD9xESl/8yn0s3Mw8uU8l8VdMiBthifkcYbCxBPFPKKnVUn6f5hpRvahan2NLYiIId7KNXqTUOv8lm2ItgnqIu6O7zOyM/xRLFQ6Xktrou3ORgEk6Pu8cr8XxYhaWYSY72N11SDTsDWlJNQat7oBhxEqEzWASDak1VQeTSHdn0N8f0r+t2w0T6uIA+qYkO5Y7NvjPblUjA="
+    - secure: "jJyZUPqQ4hzfZ9NpfSVBaoG6dholVzgf15d3tifLkPcJuMRBJCrQYlpjY30wg+Ad0MChS1pCA/RGXQdgvdaKk/jKcEo1TmcFlgjWjOwUTH8Zv41ALPB/Wif8Gm8r4dEsN/0th6DkHb5GfrWBh+1rU0YUgXtvVDGcxqM7Y6hjD0ucyv7095AHeVgMrwViWau81L0Qmhogs+ciJYWV20LHCjFDGyWIVzMt3z2QHJ/l+agyhaWSCKV15NO3bcqDF/dq5aiQWu13i23xvrBR2GY9dUbCmSx/+wj+9Xt+kkJNj6cLTZy1ZYK02u+RaABjx0RoimyPHnM18gVVBY6PFlKbecEClI+CTHcJpqYFPVlvTYbsD2JSscn8lyqZ6tOdXMOkdL+0+FAzhi4oa1EL5xxYpTBslW4LYFemBJpc/mrtv0r2hOeTJ/QQqDdnuRec5eYC6XgAxuzWdUxxrNpPX7yikC5FAKgCE3/qO9/ERytJOI72Qu6unKXWl+4M5MdcaDYDS+kxi4Np8FvCpaIEtDrvyS+2fMYQp1HX1yqbUnbe52Y3/Q4R58s92rSACfxnHgKqQM4bSETxYapWjvKXbzEXTzhgWHe5UcXwASkLS8b+gcjFZJHwfyU+cg1CWiZXgp41SyudMX5FIEPRmh5VUVNn3n5WRU4MSBpkse2fSYbpHZk="
+    - secure: "RO4mjKheSPlUmGw7MN9ahQm9ZDSWqsQJyNfyvpWtBXL6F3dSksybIa5pnwJ2M3fYFd1iZsJ5PMqdlUZ2HmeNTjng6kmPg0RGKnEGjW2HuXpyIJB3AolFLvfRldq1KvjtBDwendiKh0qc9yVDlXxbugX36bwH+AgXEcI0mG3DfECk2QM5pCqHBxMmnvwDDnj1lceTh69ufSVgP2qC1tqMkxNvxzkQwBP4/HSUu+LO4Ps2tojqPpcxww/HQPeKDHAcdLWp9Wcj+/14G6lKxD1cEkNO8PP3infakOkOcqVdjfmyBl8fDkVRHq3TsLgu9JaZyeXpB0tjX0GezpYEJMGApGlsBXifSyYrFdQWBcYQmMDlkGeIem6ZveqEAqkK9NvWRkQ0KTLrRrHhcsjJ2jd7Ij7YDoSFo0omQKtiZwXwAeRmBKi0aZ8htjkFPa2ADK3YiBGCTMoNW52m1Jgc+kpmL45emWFtKflO/+muAofpHwzjyJu3i9VHN8doHPBL8fY2L2M2LftqmT5hJalxS5TsvUEK+BlGoo6oFZmYvtNwIq+Famc7Dk5efNjq7Kyb3f2uiFeLcf5OhDEOSDWAOp101Bv7n90AYdd4ZJmuMU5d7fbGPkt7ubqX2N9yMD3mv0lODYN3WYqsoaFkgaDMhJOKK/IyhcuY9s2P0GAnXvBkSFY="
+    - secure: "NelpTQoiOxvu6Me5s/ioAuxU6PzMgNwDuig26U40GhdyPine+AeAwDR9P1ASNziAp+5GjjOczdQmggHRHwcpftDrJFfvIMCPbLXyg5GGJV5RaDNCskYqsef4I/irhOvvAc5VfJSKiNkn3vgsqISiPBWLkvn02Ja6+5EUV+rlQGneH4NUUDp8nCHlZtPdpBlqxWlFiDw6PzUaPt1wUslCffgx39QH8wk1PIwU5qInIRPjV2Iiy5GZ17gC0Q3rI7D6Gb4CYTW+JJgfdrP57WHGP0pGRjvRfI8DyV7BmzeGWNKVgKmTEuR/WR0r/4AG0ijc+WZiFuk5r8vRekJDEH5c/FizFNcAfbJs1v/XM1VariwkOXSN+7l8RyDe4MkTx5PS0QwQT7FnTh9byk4f4AoHsyPiVho/CDqHnicySmaEvWMlztwHPGqmad+d+4QRdMPb3vnRV89RduYIC1EymoDJ9Bj81pi7DeS2RjkTmPGbtWudI7HdJmJnAMdOYDK+VbMiQmJy6u9l5VA/3oz4HOs3mLQk829wT4aSd3k7AaI0uwLb/1Xi3BPeaY/1+tq5VZ1eZ7gHiNT5lFWj+3/PbthkEXZ0Wg1X7ePO46Mz88Jn1vDrim8Uq9qkMV3p8jxh1jPI1KU7Byf4kRQZzGRFwT+odytpno+ZQRpex21dcRlChME="
+
+before_install:
+  - wget https://s3.amazonaws.com/swoop-maven/settings.xml -O $HOME/.m2/settings.xml
+
+# Set the Maven version to have the minor version be the Travis build number
+before_script: "mvn versions:set -DnewVersion=${SWOOP_PROJECT_VERSION}"
+
+after_success:
+  # Where the deployment actually happens. Will only deploy off the specified
+  # branch, and tag the version in Github
+  - >
+    [ ${TRAVIS_PULL_REQUEST} = 'false' -a ${TRAVIS_BRANCH} = ${SWOOP_RELEASE_BRANCH} ] &&
+    wget https://s3.amazonaws.com/swoop-maven/settings.xml -O /tmp/swoop-maven-settings.xml &&
+    mvn -DskipTests=true deploy --settings /tmp/swoop-maven-settings.xml &&
+    curl -H "Accept: application/vnd.github.v3+json" -H "Authorization: token ${GITHUB_TOKEN}" -X POST "https://api.github.com/repos/${TRAVIS_REPO_SLUG}/releases" -d '{
+      "tag_name": "swoop-es-plugin-v'"${SWOOP_PROJECT_VERSION}"'",
+      "target_commitish": "'"${TRAVIS_COMMIT}"'",
+      "name": "v'"${SWOOP_PROJECT_VERSION}"'",
+      "body": "https://travis-ci.com/'"${TRAVIS_REPO_SLUG}"'/builds/'"${TRAVIS_BUILD_ID}"'",
+      "prerelease": false
+    }'
