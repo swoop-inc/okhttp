@@ -40,6 +40,8 @@ public interface Dns {
     }
   };
 
+  Dns ROUND_ROBIN = new RoundRobinDns();
+
   /**
    * Returns the IP addresses of {@code hostname}, in the order they will be attempted by OkHttp. If
    * a connection to an address fails, OkHttp will retry the connection with the next address until
