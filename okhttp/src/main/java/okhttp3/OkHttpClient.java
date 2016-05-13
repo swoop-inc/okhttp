@@ -44,20 +44,6 @@ import okhttp3.internal.io.RealConnection;
 import okhttp3.internal.tls.CertificateChainCleaner;
 import okhttp3.internal.tls.OkHostnameVerifier;
 
-import javax.net.SocketFactory;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.X509TrustManager;
-import java.net.MalformedURLException;
-import java.net.Proxy;
-import java.net.ProxySelector;
-import java.net.UnknownHostException;
-import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Factory for {@linkplain Call calls}, which can be used to send HTTP requests and read their
@@ -175,6 +161,8 @@ public class OkHttpClient implements Cloneable, Call.Factory {
 
   // @swoop
   final String userAgent;
+  final boolean dnsLoadBalancing;
+
 
   public OkHttpClient() {
     this(new Builder());
@@ -223,6 +211,7 @@ public class OkHttpClient implements Cloneable, Call.Factory {
 
     // @swoop
     this.userAgent = builder.userAgent;
+    this.dnsLoadBalancing = builder.dnsLoadBalancing;
   }
 
   private X509TrustManager systemDefaultTrustManager() {
@@ -407,6 +396,7 @@ public class OkHttpClient implements Cloneable, Call.Factory {
 
     // @swoop
     String userAgent;
+    boolean dnsLoadBalancing;
 
     public Builder() {
       dispatcher = new Dispatcher();
@@ -430,6 +420,7 @@ public class OkHttpClient implements Cloneable, Call.Factory {
 
       // @swoop
       userAgent = Version.userAgent();
+      dnsLoadBalancing = false;
     }
 
     Builder(OkHttpClient okHttpClient) {
@@ -827,6 +818,11 @@ public class OkHttpClient implements Cloneable, Call.Factory {
      */
     public Builder userAgent(String userAgent) {
       this.userAgent = userAgent;
+      return this;
+    }
+
+    public Builder dnsLoadBalancing(boolean dnsLoadBalancing) {
+      this.dnsLoadBalancing = dnsLoadBalancing;
       return this;
     }
 
