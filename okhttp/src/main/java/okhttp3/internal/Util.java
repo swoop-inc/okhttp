@@ -175,7 +175,7 @@ public final class Util {
     source.timeout().deadlineNanoTime(now + Math.min(originalDuration, timeUnit.toNanos(duration)));
     try {
       Buffer skipBuffer = new Buffer();
-      while (source.read(skipBuffer, 2048) != -1) {
+      while (source.read(skipBuffer, 8192) != -1) {
         skipBuffer.clear();
       }
       return true; // Success! The source has been exhausted.
@@ -445,5 +445,10 @@ public final class Util {
   /** Returns true if {@code host} is not a host name and might be an IP address. */
   public static boolean verifyAsIpAddress(String host) {
     return VERIFY_AS_IP_ADDRESS.matcher(host).matches();
+  }
+
+  /** Returns a {@link Locale#US} formatted {@link String}. */
+  public static String format(String format, Object... args) {
+    return String.format(Locale.US, format, args);
   }
 }

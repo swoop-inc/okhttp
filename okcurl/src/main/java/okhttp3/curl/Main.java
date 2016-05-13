@@ -45,6 +45,7 @@ import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.internal.Util;
 import okhttp3.internal.framed.Http2;
 import okhttp3.internal.http.StatusLine;
 import okio.BufferedSource;
@@ -57,6 +58,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 public class Main extends HelpOption implements Runnable {
   static final String NAME = "okcurl";
   static final int DEFAULT_TIMEOUT = -1;
+  private static Logger frameLogger;
 
   static Main fromArgs(String... args) {
     return SingleCommand.singleCommand(Main.class).parse(args);
@@ -251,7 +253,7 @@ public class Main extends HelpOption implements Runnable {
         }
 
         @Override public X509Certificate[] getAcceptedIssuers() {
-          return null;
+          return new X509Certificate[0];
         }
       };
       context.init(null, new TrustManager[] {permissive}, null);
@@ -270,15 +272,15 @@ public class Main extends HelpOption implements Runnable {
   }
 
   private static void enableHttp2FrameLogging() {
-    Logger logger = Logger.getLogger(Http2.class.getName() + "$FrameLogger");
-    logger.setLevel(Level.FINE);
+    frameLogger = Logger.getLogger(Http2.class.getName() + "$FrameLogger");
+    frameLogger.setLevel(Level.FINE);
     ConsoleHandler handler = new ConsoleHandler();
     handler.setLevel(Level.FINE);
     handler.setFormatter(new SimpleFormatter() {
       @Override public String format(LogRecord record) {
-        return String.format("%s%n", record.getMessage());
+        return Util.format("%s%n", record.getMessage());
       }
     });
-    logger.addHandler(handler);
+    frameLogger.addHandler(handler);
   }
 }

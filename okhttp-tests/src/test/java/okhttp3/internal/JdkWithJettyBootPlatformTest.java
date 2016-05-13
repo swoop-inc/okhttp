@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Square, Inc.
+ * Copyright (C) 2016 Square, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,25 +15,17 @@
  */
 package okhttp3.internal;
 
-/**
- * Runnable implementation which always sets its thread name.
- */
-public abstract class NamedRunnable implements Runnable {
-  protected final String name;
+import org.junit.Test;
 
-  public NamedRunnable(String format, Object... args) {
-    this.name = Util.format(format, args);
+import static okhttp3.internal.PlatformTest.getPlatform;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
+
+public class JdkWithJettyBootPlatformTest {
+  @Test
+  public void testBuildsWithJettyBoot() {
+    assumeTrue(getPlatform().equals("jdk-with-jetty-boot"));
+
+    assertNotNull(JdkWithJettyBootPlatform.buildIfSupported());
   }
-
-  @Override public final void run() {
-    String oldName = Thread.currentThread().getName();
-    Thread.currentThread().setName(name);
-    try {
-      execute();
-    } finally {
-      Thread.currentThread().setName(oldName);
-    }
-  }
-
-  protected abstract void execute();
 }

@@ -30,9 +30,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import okhttp3.Protocol;
 import okhttp3.internal.NamedRunnable;
+import okhttp3.internal.Platform;
 import okhttp3.internal.Util;
 import okio.Buffer;
 import okio.BufferedSink;
@@ -40,7 +40,7 @@ import okio.BufferedSource;
 import okio.ByteString;
 import okio.Okio;
 
-import static okhttp3.internal.Internal.logger;
+import static okhttp3.internal.Platform.INFO;
 import static okhttp3.internal.framed.Settings.DEFAULT_INITIAL_WINDOW_SIZE;
 
 /**
@@ -155,7 +155,7 @@ public final class FramedConnection implements Closeable {
       // Like newSingleThreadExecutor, except lazy creates the thread.
       pushExecutor = new ThreadPoolExecutor(0, 1, 60, TimeUnit.SECONDS,
           new LinkedBlockingQueue<Runnable>(),
-          Util.threadFactory(String.format("OkHttp %s Push Observer", hostname), true));
+          Util.threadFactory(Util.format("OkHttp %s Push Observer", hostname), true));
       // 1 less than SPDY http://tools.ietf.org/html/draft-ietf-httpbis-http2-17#section-6.9.2
       peerSettings.set(Settings.INITIAL_WINDOW_SIZE, 0, 65535);
       peerSettings.set(Settings.MAX_FRAME_SIZE, 0, Http2.INITIAL_MAX_FRAME_SIZE);
@@ -170,7 +170,6 @@ public final class FramedConnection implements Closeable {
     frameWriter = variant.newWriter(builder.sink, client);
 
     readerRunnable = new Reader(variant.newReader(builder.source, client));
-    new Thread(readerRunnable).start(); // Not a daemon thread.
   }
 
   /** The protocol as selected using ALPN. */
@@ -501,16 +500,27 @@ public final class FramedConnection implements Closeable {
   }
 
   /**
-   * Sends a connection header if the current variant requires it. This should be called after
-   * {@link Builder#build} for all new connections.
+   * Sends any initial frames and starts reading frames from the remote peer. This should be called
+   * after {@link Builder#build} for all new connections.
    */
-  public void sendConnectionPreface() throws IOException {
-    frameWriter.connectionPreface();
-    frameWriter.settings(okHttpSettings);
-    int windowSize = okHttpSettings.getInitialWindowSize(Settings.DEFAULT_INITIAL_WINDOW_SIZE);
-    if (windowSize != Settings.DEFAULT_INITIAL_WINDOW_SIZE) {
-      frameWriter.windowUpdate(0, windowSize - Settings.DEFAULT_INITIAL_WINDOW_SIZE);
+  public void start() throws IOException {
+    start(true);
+  }
+
+  /**
+   * @param sendConnectionPreface true to send connection preface frames. This should always be true
+   *     except for in tests that don't check for a connection preface.
+   */
+  void start(boolean sendConnectionPreface) throws IOException {
+    if (sendConnectionPreface) {
+      frameWriter.connectionPreface();
+      frameWriter.settings(okHttpSettings);
+      int windowSize = okHttpSettings.getInitialWindowSize(Settings.DEFAULT_INITIAL_WINDOW_SIZE);
+      if (windowSize != Settings.DEFAULT_INITIAL_WINDOW_SIZE) {
+        frameWriter.windowUpdate(0, windowSize - Settings.DEFAULT_INITIAL_WINDOW_SIZE);
+      }
     }
+    new Thread(readerRunnable).start(); // Not a daemon thread.
   }
 
   /** Merges {@code settings} into this peer's settings and sends them to the remote peer. */
@@ -668,7 +678,7 @@ public final class FramedConnection implements Closeable {
               try {
                 listener.onStream(newStream);
               } catch (IOException e) {
-                logger.log(Level.INFO, "FramedConnection.Listener failure for " + hostname, e);
+                Platform.get().log(INFO, "FramedConnection.Listener failure for " + hostname, e);
                 try {
                   newStream.close(ErrorCode.PROTOCOL_ERROR);
                 } catch (IOException ignored) {

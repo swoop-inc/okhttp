@@ -17,14 +17,14 @@ package okhttp3;
 
 import java.io.IOException;
 import java.net.ProtocolException;
-import java.util.logging.Level;
 import okhttp3.internal.NamedRunnable;
+import okhttp3.internal.Platform;
 import okhttp3.internal.http.HttpEngine;
 import okhttp3.internal.http.RequestException;
 import okhttp3.internal.http.RouteException;
 import okhttp3.internal.http.StreamAllocation;
 
-import static okhttp3.internal.Internal.logger;
+import static okhttp3.internal.Platform.INFO;
 import static okhttp3.internal.http.HttpEngine.MAX_FOLLOW_UPS;
 
 final class RealCall implements Call {
@@ -96,7 +96,7 @@ final class RealCall implements Call {
     private final boolean forWebSocket;
 
     private AsyncCall(Callback responseCallback, boolean forWebSocket) {
-      super("OkHttp %s", originalRequest.url().toString());
+      super("OkHttp %s", redactedUrl().toString());
       this.responseCallback = responseCallback;
       this.forWebSocket = forWebSocket;
     }
@@ -135,7 +135,7 @@ final class RealCall implements Call {
       } catch (IOException e) {
         if (signalledCallback) {
           // Do not signal the callback twice!
-          logger.log(Level.INFO, "Callback failure for " + toLoggableString(), e);
+          Platform.get().log(INFO, "Callback failure for " + toLoggableString(), e);
         } else {
           responseCallback.onFailure(RealCall.this, e);
         }
@@ -151,8 +151,11 @@ final class RealCall implements Call {
    */
   private String toLoggableString() {
     String string = canceled ? "canceled call" : "call";
-    HttpUrl redactedUrl = originalRequest.url().resolve("/...");
-    return string + " to " + redactedUrl;
+    return string + " to " + redactedUrl();
+  }
+
+  HttpUrl redactedUrl() {
+    return originalRequest.url().resolve("/...");
   }
 
   private Response getResponseWithInterceptorChain(boolean forWebSocket) throws IOException {
@@ -245,7 +248,7 @@ final class RealCall implements Call {
         throw e.getCause();
       } catch (RouteException e) {
         // The attempt to connect via a route failed. The request will not have been sent.
-        HttpEngine retryEngine = engine.recover(e.getLastConnectException(), null);
+        HttpEngine retryEngine = engine.recover(e.getLastConnectException(), true, null);
         if (retryEngine != null) {
           releaseConnection = false;
           engine = retryEngine;
@@ -255,7 +258,7 @@ final class RealCall implements Call {
         throw e.getLastConnectException();
       } catch (IOException e) {
         // An attempt to communicate with a server failed. The request may have been sent.
-        HttpEngine retryEngine = engine.recover(e, null);
+        HttpEngine retryEngine = engine.recover(e, false, null);
         if (retryEngine != null) {
           releaseConnection = false;
           engine = retryEngine;
