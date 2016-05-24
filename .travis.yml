@@ -5,6 +5,11 @@ notifications:
 
 sudo: false
 
+addons:
+  apt:
+    packages:
+    - curl
+
 cache:
   directories:
     - $HOME/.m2
@@ -20,8 +25,8 @@ jdk:
 env:
   global:
     # These should track with okhttp upstream
-    - MAJOR_VERSION=2
-    - MINOR_VERSION=6
+    - MAJOR_VERSION=3
+    - MINOR_VERSION=3
     - PATCH_VERSION=0
     - SWOOP_RELEASE_BRANCH=swoop
     - PADDED_TRAVIS_BUILD_NUMBER=$(printf "%03d" $TRAVIS_BUILD_NUMBER)
@@ -37,15 +42,22 @@ before_install:
   - wget https://s3.amazonaws.com/swoop-maven/settings.xml -O $HOME/.m2/settings.xml
 
 # Set the Maven version to have the minor version be the Travis build number
-before_script: "mvn versions:set -DnewVersion=${SWOOP_PROJECT_VERSION}"
+before_script:
+  - >
+    if [ ${TRAVIS_BRANCH} = ${SWOOP_RELEASE_BRANCH} ]
+      then mvn versions:set -DnewVersion=${SWOOP_PROJECT_VERSION}
+      else mvn versions:set -DnewVersion=${SWOOP_PROJECT_VERSION}-SNAPSHOT
+    fi
 
 after_success:
+  # Maven deployments will always happen, but commits to anywhere other than
+  # the designated release branch will be snapshot releases.
+  - mvn -DskipTests=true deploy
+
   # Where the deployment actually happens. Will only deploy off the specified
   # branch, and tag the version in Github
   - >
     [ ${TRAVIS_PULL_REQUEST} = 'false' -a ${TRAVIS_BRANCH} = ${SWOOP_RELEASE_BRANCH} ] &&
-    wget https://s3.amazonaws.com/swoop-maven/settings.xml -O /tmp/swoop-maven-settings.xml &&
-    mvn -DskipTests=true deploy --settings /tmp/swoop-maven-settings.xml &&
     curl -H "Accept: application/vnd.github.v3+json" -H "Authorization: token ${GITHUB_TOKEN}" -X POST "https://api.github.com/repos/${TRAVIS_REPO_SLUG}/releases" -d '{
       "tag_name": "swoop-es-plugin-v'"${SWOOP_PROJECT_VERSION}"'",
       "target_commitish": "'"${TRAVIS_COMMIT}"'",
