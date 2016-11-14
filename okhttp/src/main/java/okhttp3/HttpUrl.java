@@ -15,6 +15,8 @@
  */
 package okhttp3;
 
+import okio.Buffer;
+
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -27,7 +29,6 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import okio.Buffer;
 
 import static okhttp3.internal.Util.delimiterOffset;
 import static okhttp3.internal.Util.domainToAscii;
@@ -329,6 +330,8 @@ public final class HttpUrl {
 
   /** Canonical URL. */
   private final String url;
+
+  private volatile String redactedUrl = null;
 
   HttpUrl(Builder builder) {
     this.scheme = builder.scheme;
@@ -847,11 +850,17 @@ public final class HttpUrl {
    * http://username:password@example.com/path} returns {@code http://example.com/...}.
    */
   public String redact() {
-    return newBuilder("/...")
-        .username("")
-        .password("")
-        .build()
-        .toString();
+    // Since HttpUrl objects are immutable, we should be able to store the redacted
+    // version once so that if redact() is called multiple times, it won't leak memory
+    if (redactedUrl == null) {
+      Builder redactedUrlBuilder = newBuilder("/...");
+      if (redactedUrlBuilder != null) {
+        this.redactedUrl = redactedUrlBuilder.username("").password("").build().toString();
+      } else {
+        this.redactedUrl = "";
+      }
+    }
+    return redactedUrl;
   }
 
   /**
