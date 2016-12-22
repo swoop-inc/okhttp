@@ -23,10 +23,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public final class DispatcherTest {
+public final class DispatcherImplTest {
   RecordingExecutor executor = new RecordingExecutor();
   RecordingCallback callback = new RecordingCallback();
-  Dispatcher dispatcher = new Dispatcher(executor);
+  DispatcherImpl dispatcher = new DispatcherImpl(executor);
   OkHttpClient client = defaultClient().newBuilder()
       .dispatcher(dispatcher)
       .build();

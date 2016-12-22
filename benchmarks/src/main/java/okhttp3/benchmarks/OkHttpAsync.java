@@ -25,7 +25,7 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.Dispatcher;
+import okhttp3.DispatcherImpl;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -49,7 +49,7 @@ class OkHttpAsync implements HttpClient {
 
     client = new OkHttpClient.Builder()
         .protocols(benchmark.protocols)
-        .dispatcher(new Dispatcher(new ThreadPoolExecutor(benchmark.concurrencyLevel,
+        .dispatcher(new DispatcherImpl(new ThreadPoolExecutor(benchmark.concurrencyLevel,
             benchmark.concurrencyLevel, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>())))
         .build();
 

@@ -1922,7 +1922,7 @@ public final class CallTest {
    */
   @Test public void canceledBeforeIOSignalsOnFailure() throws Exception {
     // Force requests to be executed serially.
-    okhttp3.Dispatcher dispatcher = new okhttp3.Dispatcher(client.dispatcher().executorService());
+    okhttp3.Dispatcher dispatcher = new DispatcherImpl(client.dispatcher().executorService());
     dispatcher.setMaxRequests(1);
     client = client.newBuilder()
         .dispatcher(dispatcher)

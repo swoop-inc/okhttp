@@ -11,7 +11,7 @@ public final class TestUtil {
   }
 
   private static final ConnectionPool connectionPool = new ConnectionPool();
-  private static final Dispatcher dispatcher = new Dispatcher();
+  private static final Dispatcher dispatcher = new DispatcherImpl();
 
   /**
    * Returns an OkHttpClient for all tests to use as a starting point.

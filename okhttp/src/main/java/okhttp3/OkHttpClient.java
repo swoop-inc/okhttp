@@ -399,7 +399,7 @@ public class OkHttpClient implements Cloneable, Call.Factory, WebSocket.Factory 
   }
 
   /**
-   * swoop
+   * swoop.
    */
   public String getUserAgent() {
     return userAgent;
@@ -457,7 +457,7 @@ public class OkHttpClient implements Cloneable, Call.Factory, WebSocket.Factory 
     String userAgent;
 
     public Builder() {
-      dispatcher = new Dispatcher();
+      dispatcher = new DispatcherImpl();
       protocols = DEFAULT_PROTOCOLS;
       connectionSpecs = DEFAULT_CONNECTION_SPECS;
       proxySelector = ProxySelector.getDefault();
@@ -889,7 +889,7 @@ public class OkHttpClient implements Cloneable, Call.Factory, WebSocket.Factory 
     }
 
     /**
-     * swoop
+     * swoop.
      */
     public Builder userAgent(String userAgent) {
       this.userAgent = userAgent;
