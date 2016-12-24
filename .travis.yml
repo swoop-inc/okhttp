@@ -26,7 +26,7 @@ env:
   global:
     # These should track with okhttp upstream
     - MAJOR_VERSION=3
-    - MINOR_VERSION=5
+    - MINOR_VERSION=6
     - PATCH_VERSION=0
     - SWOOP_RELEASE_BRANCH=swoop-okhttp3
     - PADDED_TRAVIS_BUILD_NUMBER=$(printf "%03d" $TRAVIS_BUILD_NUMBER)
